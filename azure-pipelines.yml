@@ -1,0 +1,57 @@
+trigger:
+- main
+- master
+- staging/*
+- 20*
+
+pr:
+- main
+- master
+
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+  runCondition: true
+  targetBranch: $[ variables['Build.SourceBranchName'] ]
+
+jobs:
+
+- job: LinuxBuilds
+  strategy:
+    matrix:
+      linux_bionic:
+        imageName: 'ubuntu-18.04'
+        pythonVersion: 3.6
+        OS_VERSION: bionic
+        env: PYTHON=python PIP=pip
+        cache: pip
+      linux_xenial:
+        imageName: 'ubuntu-16.04'
+        sudo: required
+        pythonVersion: 3.5
+        OS_VERSION: xenial
+        env: PYTHON=python PIP=pip
+        cache: pip
+      linux_focal:
+        imageName: 'ubuntu-20.04'
+        sudo: required
+        pythonVersion: 3.8
+        OS_VERSION: focal
+        env: PYTHON=python PIP=pip
+        cache: pip
+      linux_bionic_doxygen:
+        imageName: 'ubuntu-18.04'
+        OS_TYPE: 'doxygen'
+        OS_VERSION: bionic
+  pool:
+    vmImage: $(imageName)
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(pythonVersion)'
+  - checkout: self
+    fetchDepth: 10
+    clean: true
+    persistCredentials: true
+  - script: ./CI/travis/test.sh
+    condition: eq(variables.runCondition, true)
+    displayName: 'TEST_sakedjh'

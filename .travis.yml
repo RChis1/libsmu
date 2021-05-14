@@ -151,3 +151,4 @@ deploy:
       repo: analogdevicesinc/libsmu
       tags: true
       condition: "$TRAVIS_OS_NAME = osx"
+  # build tar containg python files
